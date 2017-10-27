@@ -56,6 +56,9 @@ void Game::Update(DX::StepTimer const& timer)
 
     // TODO: Add your game logic here.
     elapsedTime;
+
+	m_pos.x += 4.f;
+	m_pos.y += 2.f;
 }
 
 // Draws the scene.
@@ -70,6 +73,9 @@ void Game::Render()
     Clear();
 
     // TODO: Add your rendering code here.
+	m_spriteBatch->Begin();
+	m_spriteBatch->Draw(m_texture.Get(), m_pos);
+	m_spriteBatch->End();
 
     Present();
 }
@@ -213,6 +219,17 @@ void Game::CreateDevice()
     DX::ThrowIfFailed(context.As(&m_d3dContext));
 
     // TODO: Initialize device dependent objects here (independent of window size).
+	m_spriteBatch = std::make_unique<SpriteBatch>(m_d3dContext.Get());
+	ComPtr<ID3D11Resource> resource;
+	DX::ThrowIfFailed(
+		CreateWICTextureFromFile(m_d3dDevice.Get(), L"hito.png", resource.GetAddressOf(), m_texture.ReleaseAndGetAddressOf())
+	);
+
+	ComPtr<ID3D11Texture2D> texture;
+	DX::ThrowIfFailed(resource.As(&texture));
+
+	CD3D11_TEXTURE2D_DESC textureDesc;
+	texture->GetDesc(&textureDesc);
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -314,6 +331,8 @@ void Game::CreateResources()
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
+	m_texture.Reset();
+	m_spriteBatch.reset();
 
     m_depthStencilView.Reset();
     m_renderTargetView.Reset();
